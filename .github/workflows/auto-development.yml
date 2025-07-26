@@ -91,7 +91,6 @@ jobs:
       run: |
         mkdir -p docs/planning
         
-        # PRD Analysis
         cat > docs/planning/prd-analysis.md << 'EOF'
         # Standardized PRD Analysis
         ## Project Overview
@@ -108,7 +107,6 @@ jobs:
         - Database: PostgreSQL/MongoDB
         EOF
         
-        # Development Plan
         cat > docs/planning/development-plan.md << 'EOF'
         # Development Task Plan
         
@@ -133,7 +131,6 @@ jobs:
         - [ ] Deploy to staging/production
         EOF
         
-        # Frontend Design
         cat > docs/planning/frontend-design.md << 'EOF'
         # Frontend Design Specification
         
@@ -198,153 +195,147 @@ jobs:
         git config --global user.email "auto-dev@github.actions"
         git checkout -b ${{ needs.initialize.outputs.development_branch }}-${{ matrix.component }}
 
-    - name: Generate application code
+    - name: Generate backend code
+      if: matrix.component == 'backend'
       run: |
-        if [ "${{ matrix.component }}" = "backend" ]; then
-          mkdir -p src/backend
-          
-          # Backend App
-          cat > src/backend/app.js << 'BACKEND_EOF'
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-
-const app = express();
-
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log('Server running on port ' + PORT);
-});
-
-module.exports = app;
-BACKEND_EOF
-          
-          # Backend Package.json
-          cat > src/backend/package.json << 'BACKEND_PKG_EOF'
-{
-  "name": "auto-app-backend",
-  "version": "1.0.0",
-  "description": "Auto-generated backend application",
-  "main": "app.js",
-  "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
-    "test": "jest"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1",
-    "jest": "^29.5.0"
-  }
-}
-BACKEND_PKG_EOF
+        mkdir -p src/backend
         
-        elif [ "${{ matrix.component }}" = "frontend" ]; then
-          mkdir -p src/frontend/src
-          
-          # Frontend App
-          cat > src/frontend/src/App.js << 'FRONTEND_APP_EOF'
-import React from 'react';
-import './App.css';
+        cat > src/backend/app.js << 'EOF'
+        const express = require('express');
+        const cors = require('cors');
+        const helmet = require('helmet');
 
-function App() {
-  const [message, setMessage] = React.useState('Loading...');
+        const app = express();
 
-  React.useEffect(() => {
-    fetch('/api/health')
-      .then(res => res.json())
-      .then(data => setMessage('App is running! Server status: ' + data.status))
-      .catch(err => setMessage('Error connecting to server'));
-  }, []);
+        app.use(helmet());
+        app.use(cors());
+        app.use(express.json());
 
-  return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Auto-Generated App</h1>
-        <p>{message}</p>
-      </header>
-    </div>
-  );
-}
+        app.get('/api/health', (req, res) => {
+          res.json({ status: 'ok', timestamp: new Date().toISOString() });
+        });
 
-export default App;
-FRONTEND_APP_EOF
-          
-          # Frontend Package.json
-          cat > src/frontend/package.json << 'FRONTEND_PKG_EOF'
-{
-  "name": "auto-app-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test"
-  },
-  "eslintConfig": {
-    "extends": ["react-app"]
-  },
-  "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
-  }
-}
-FRONTEND_PKG_EOF
-          
-          # Frontend CSS
-          cat > src/frontend/src/App.css << 'FRONTEND_CSS_EOF'
-.App {
-  text-align: center;
-}
+        app.use((err, req, res, next) => {
+          console.error(err.stack);
+          res.status(500).json({ error: 'Internal server error' });
+        });
 
-.App-header {
-  background-color: #282c34;
-  padding: 20px;
-  color: white;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-}
-FRONTEND_CSS_EOF
-        fi
+        const PORT = process.env.PORT || 3000;
+        app.listen(PORT, () => {
+          console.log('Server running on port ' + PORT);
+        });
+
+        module.exports = app;
+        EOF
+        
+        cat > src/backend/package.json << 'EOF'
+        {
+          "name": "auto-app-backend",
+          "version": "1.0.0",
+          "description": "Auto-generated backend application",
+          "main": "app.js",
+          "scripts": {
+            "start": "node app.js",
+            "dev": "nodemon app.js",
+            "test": "jest"
+          },
+          "dependencies": {
+            "express": "^4.18.2",
+            "cors": "^2.8.5",
+            "helmet": "^7.0.0"
+          },
+          "devDependencies": {
+            "nodemon": "^3.0.1",
+            "jest": "^29.5.0"
+          }
+        }
+        EOF
+
+    - name: Generate frontend code
+      if: matrix.component == 'frontend'
+      run: |
+        mkdir -p src/frontend/src
+        
+        cat > src/frontend/src/App.js << 'EOF'
+        import React from 'react';
+        import './App.css';
+
+        function App() {
+          const [message, setMessage] = React.useState('Loading...');
+
+          React.useEffect(() => {
+            fetch('/api/health')
+              .then(res => res.json())
+              .then(data => setMessage('App is running! Server status: ' + data.status))
+              .catch(err => setMessage('Error connecting to server'));
+          }, []);
+
+          return (
+            <div className="App">
+              <header className="App-header">
+                <h1>Auto-Generated App</h1>
+                <p>{message}</p>
+              </header>
+            </div>
+          );
+        }
+
+        export default App;
+        EOF
+        
+        cat > src/frontend/package.json << 'EOF'
+        {
+          "name": "auto-app-frontend",
+          "version": "1.0.0",
+          "private": true,
+          "dependencies": {
+            "react": "^18.2.0",
+            "react-dom": "^18.2.0",
+            "react-scripts": "5.0.1"
+          },
+          "scripts": {
+            "start": "react-scripts start",
+            "build": "react-scripts build",
+            "test": "react-scripts test"
+          },
+          "eslintConfig": {
+            "extends": ["react-app"]
+          },
+          "browserslist": {
+            "production": [">0.2%", "not dead", "not op_mini all"],
+            "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+          }
+        }
+        EOF
+        
+        cat > src/frontend/src/App.css << 'EOF'
+        .App {
+          text-align: center;
+        }
+
+        .App-header {
+          background-color: #282c34;
+          padding: 20px;
+          color: white;
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          font-size: calc(10px + 2vmin);
+        }
+        EOF
 
     - name: Verify generated files
       run: |
         echo "Checking generated files for ${{ matrix.component }}..."
         if [ "${{ matrix.component }}" = "backend" ]; then
           ls -la src/backend/
-          echo "Backend app.js content:"
-          head -10 src/backend/app.js
+          echo "Backend app.js exists: $(test -f src/backend/app.js && echo 'YES' || echo 'NO')"
         elif [ "${{ matrix.component }}" = "frontend" ]; then
           ls -la src/frontend/
           ls -la src/frontend/src/
-          echo "Frontend App.js content:"
-          head -10 src/frontend/src/App.js
+          echo "Frontend App.js exists: $(test -f src/frontend/src/App.js && echo 'YES' || echo 'NO')"
         fi
 
     - name: Commit development results
