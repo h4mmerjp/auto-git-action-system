@@ -94,25 +94,25 @@ jobs:
         
         # Update metrics file with collected data
         cat > "$METRICS_FILE" << EOF
-{
-  "collected_at": "${CURRENT_TIME}",
-  "period": "7_days",
-  "summary": {
-    "total_iterations": ${TOTAL_ITERATIONS},
-    "successful_iterations": ${SUCCESSFUL_ITERATIONS},
-    "failed_iterations": ${FAILED_ITERATIONS},
-    "success_rate": ${SUCCESS_RATE}
-  },
-  "agent_usage": {
-    "prd_writer": ${TOTAL_ITERATIONS},
-    "project_task_planner": ${TOTAL_ITERATIONS},
-    "frontend_designer": ${TOTAL_ITERATIONS},
-    "vibe_coding_coach": $((TOTAL_ITERATIONS * 2)),
-    "code_refactorer": ${TOTAL_ITERATIONS},
-    "security_auditor": ${TOTAL_ITERATIONS}
-  }
-}
-EOF
+        {
+          "collected_at": "${CURRENT_TIME}",
+          "period": "7_days",
+          "summary": {
+            "total_iterations": ${TOTAL_ITERATIONS},
+            "successful_iterations": ${SUCCESSFUL_ITERATIONS},
+            "failed_iterations": ${FAILED_ITERATIONS},
+            "success_rate": ${SUCCESS_RATE}
+          },
+          "agent_usage": {
+            "prd_writer": ${TOTAL_ITERATIONS},
+            "project_task_planner": ${TOTAL_ITERATIONS},
+            "frontend_designer": ${TOTAL_ITERATIONS},
+            "vibe_coding_coach": $((TOTAL_ITERATIONS * 2)),
+            "code_refactorer": ${TOTAL_ITERATIONS},
+            "security_auditor": ${TOTAL_ITERATIONS}
+          }
+        }
+        EOF
 
     - name: Analyze error patterns
       run: |

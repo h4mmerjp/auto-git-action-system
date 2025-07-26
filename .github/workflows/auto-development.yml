@@ -117,15 +117,16 @@ jobs:
         cp agents/*.md ~/.claude/agents/
         # Mock Claude Code installation
         mkdir -p ~/.local/bin
-        echo '#!/bin/bash
-        echo "Claude Code Mock - Command: $@"
-        case "$1" in
-          "agent")
-            case "$2" in
-              "prd-writer")
-                echo "Analyzing and standardizing PRD..."
-                mkdir -p docs/planning
-                echo "# Standardized PRD Analysis
+        cat > ~/.local/bin/claude-code << 'EOF'
+#!/bin/bash
+echo "Claude Code Mock - Command: $@"
+case "$1" in
+  "agent")
+    case "$2" in
+      "prd-writer")
+        echo "Analyzing and standardizing PRD..."
+        mkdir -p docs/planning
+        echo "# Standardized PRD Analysis
 ## Project Overview
 Auto-generated analysis of the provided PRD
 
@@ -190,7 +191,8 @@ Generated at: $(date)" > docs/planning/frontend-design.md
                 ;;
             esac
             ;;
-        esac' > ~/.local/bin/claude-code
+        esac
+EOF
         chmod +x ~/.local/bin/claude-code
         echo "$HOME/.local/bin" >> $GITHUB_PATH
 

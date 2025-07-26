@@ -208,25 +208,25 @@ jobs:
                 # Create basic test files if missing
                 if [ -f "src/backend/package.json" ] && [ ! -f "src/backend/test" ]; then
                   mkdir -p src/backend/__tests__
-                  echo "const request = require('\''supertest'\'');
-const app = require('\''../app'\'');
+                  echo "const request = require('supertest');
+const app = require('../app');
 
-describe('\''Health Check'\'', () => {
-  test('\''GET /api/health should return 200'\'', async () => {
+describe('Health Check', () => {
+  test('GET /api/health should return 200', async () => {
     const response = await request(app)
-      .get('\''/api/health'\'')
+      .get('/api/health')
       .expect(200);
     
-    expect(response.body.status).toBe('\''ok'\'');
+    expect(response.body.status).toBe('ok');
   });
 });" > src/backend/__tests__/health.test.js
                 fi
                 
                 if [ -f "src/frontend/package.json" ] && [ ! -f "src/frontend/src/App.test.js" ]; then
-                  echo "import { render, screen } from '\''@testing-library/react'\'';
-import App from '\''./App'\'';
+                  echo "import { render, screen } from '@testing-library/react';
+import App from './App';
 
-test('\''renders app header'\'', () => {
+test('renders app header', () => {
   render(<App />);
   const headerElement = screen.getByText(/auto-generated app/i);
   expect(headerElement).toBeInTheDocument();
