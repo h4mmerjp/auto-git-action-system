@@ -53,8 +53,8 @@ cp claude-code-agents/agents/*.md ~/.claude/agents/
 GitHub リポジトリの Settings > Secrets and variables > Actions で以下を設定：
 
 ```bash
-# Claude API関連（必要に応じて）
-CLAUDE_API_KEY=your_claude_api_key
+# Claude Code OAuth Token関連（必要に応じて）
+CLAUDE_CODE_OAUTH_TOKEN=your_claude_code_oauth_token
 
 # GitHub Token（通常は自動設定済み）
 GITHUB_TOKEN=ghp_xxxxxxxxxxxx
