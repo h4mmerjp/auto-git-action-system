@@ -22,6 +22,10 @@ on:
 env:
   RETENTION_DAYS: 30
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   collect_metrics:
     runs-on: ubuntu-latest

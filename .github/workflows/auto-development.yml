@@ -25,6 +25,11 @@ env:
   MAX_ITERATIONS: ${{ github.event.inputs.max_iterations || '10' }}
   PRD_FILE: ${{ github.event.inputs.prd_file || 'docs/prd.md' }}
 
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
 jobs:
   initialize:
     runs-on: ubuntu-latest
@@ -351,7 +356,7 @@ jobs:
         git config --global user.name "Auto-Dev Bot"
         git config --global user.email "auto-dev@github.actions"
         git fetch origin ${{ needs.initialize.outputs.development_branch }}-frontend
-        git merge origin/${{ needs.initialize.outputs.development_branch }}-frontend --no-edit
+        git merge origin/${{ needs.initialize.outputs.development_branch }}-frontend --no-edit --allow-unrelated-histories
 
     - name: Setup Node.js
       uses: actions/setup-node@v4

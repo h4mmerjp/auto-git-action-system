@@ -27,6 +27,11 @@ on:
 env:
   MAX_FIX_ATTEMPTS: 3
 
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
 jobs:
   detect_errors:
     runs-on: ubuntu-latest
