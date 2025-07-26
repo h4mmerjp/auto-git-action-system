@@ -110,4 +110,4 @@
 ### APIドキュメント
 - OpenAPI/Swagger仕様書
 - RESTful API設計
-- GraphQL対応（将来的な拡張性のため）
+
