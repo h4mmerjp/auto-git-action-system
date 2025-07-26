@@ -204,7 +204,7 @@ jobs:
           mkdir -p src/backend
           
           # Backend App
-          cat > src/backend/app.js << 'EOF'
+          cat > src/backend/app.js << 'BACKEND_EOF'
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -226,14 +226,14 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(\`Server running on port \${PORT}\`);
 });
 
 module.exports = app;
-EOF
+BACKEND_EOF
           
           # Backend Package.json
-          cat > src/backend/package.json << 'EOF'
+          cat > src/backend/package.json << 'BACKEND_PKG_EOF'
 {
   "name": "auto-app-backend",
   "version": "1.0.0",
@@ -254,13 +254,13 @@ EOF
     "jest": "^29.5.0"
   }
 }
-EOF
+BACKEND_PKG_EOF
         
         else
           mkdir -p src/frontend/src
           
           # Frontend App
-          cat > src/frontend/src/App.js << 'EOF'
+          cat > src/frontend/src/App.js << 'FRONTEND_APP_EOF'
 import React from 'react';
 import './App.css';
 
@@ -270,7 +270,7 @@ function App() {
   React.useEffect(() => {
     fetch('/api/health')
       .then(res => res.json())
-      .then(data => setMessage(`App is running! Server status: ${data.status}`))
+      .then(data => setMessage(\`App is running! Server status: \${data.status}\`))
       .catch(err => setMessage('Error connecting to server'));
   }, []);
 
@@ -285,10 +285,10 @@ function App() {
 }
 
 export default App;
-EOF
+FRONTEND_APP_EOF
           
           # Frontend Package.json
-          cat > src/frontend/package.json << 'EOF'
+          cat > src/frontend/package.json << 'FRONTEND_PKG_EOF'
 {
   "name": "auto-app-frontend",
   "version": "1.0.0",
@@ -311,10 +311,10 @@ EOF
     "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   }
 }
-EOF
+FRONTEND_PKG_EOF
           
           # Frontend CSS
-          cat > src/frontend/src/App.css << 'EOF'
+          cat > src/frontend/src/App.css << 'FRONTEND_CSS_EOF'
 .App {
   text-align: center;
 }
@@ -330,7 +330,7 @@ EOF
   justify-content: center;
   font-size: calc(10px + 2vmin);
 }
-EOF
+FRONTEND_CSS_EOF
         fi
 
     - name: Commit development results
