@@ -208,7 +208,8 @@ jobs:
                 # Create basic test files if missing
                 if [ -f "src/backend/package.json" ] && [ ! -f "src/backend/test" ]; then
                   mkdir -p src/backend/__tests__
-                  echo "const request = require('supertest');
+                  cat > src/backend/__tests__/health.test.js << 'TESTEOF'
+const request = require('supertest');
 const app = require('../app');
 
 describe('Health Check', () => {
@@ -219,18 +220,21 @@ describe('Health Check', () => {
     
     expect(response.body.status).toBe('ok');
   });
-});" > src/backend/__tests__/health.test.js
+});
+TESTEOF
                 fi
                 
                 if [ -f "src/frontend/package.json" ] && [ ! -f "src/frontend/src/App.test.js" ]; then
-                  echo "import { render, screen } from '@testing-library/react';
+                  cat > src/frontend/src/App.test.js << 'REACTEOF'
+import { render, screen } from '@testing-library/react';
 import App from './App';
 
 test('renders app header', () => {
   render(<App />);
   const headerElement = screen.getByText(/auto-generated app/i);
   expect(headerElement).toBeInTheDocument();
-});" > src/frontend/src/App.test.js
+});
+REACTEOF
                 fi
                 
                 echo "Test fixes applied successfully"

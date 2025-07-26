@@ -126,7 +126,8 @@ case "$1" in
       "prd-writer")
         echo "Analyzing and standardizing PRD..."
         mkdir -p docs/planning
-        echo "# Standardized PRD Analysis
+        cat > docs/planning/prd-analysis.md << 'PRDEOF'
+# Standardized PRD Analysis
 ## Project Overview
 Auto-generated analysis of the provided PRD
 
@@ -140,11 +141,13 @@ Auto-generated analysis of the provided PRD
 - Backend: Node.js/Python
 - Database: PostgreSQL/MongoDB
 
-Generated at: $(date)" > docs/planning/prd-analysis.md
+Generated at: $(date)
+PRDEOF
                 ;;
               "project-task-planner")
                 echo "Generating development plan..."
-                echo "# Development Task Plan
+                cat > docs/planning/development-plan.md << 'PLANEOF'
+# Development Task Plan
 
 ## 1. Project Setup
 - [ ] Initialize repository structure
@@ -166,11 +169,13 @@ Generated at: $(date)" > docs/planning/prd-analysis.md
 - [ ] Setup integration tests
 - [ ] Deploy to staging/production
 
-Generated at: $(date)" > docs/planning/development-plan.md
+Generated at: $(date)
+PLANEOF
                 ;;
               "frontend-designer")
                 echo "Creating frontend design specifications..."
-                echo "# Frontend Design Specification
+                cat > docs/planning/frontend-design.md << 'DESIGNEOF'
+# Frontend Design Specification
 
 ## Design System
 - Colors: Primary (#007bff), Secondary (#6c757d)
@@ -187,7 +192,8 @@ Generated at: $(date)" > docs/planning/development-plan.md
 - Mobile-first approach
 - Breakpoints: 768px, 1024px, 1200px
 
-Generated at: $(date)" > docs/planning/frontend-design.md
+Generated at: $(date)
+DESIGNEOF
                 ;;
             esac
             ;;
@@ -273,74 +279,79 @@ EOF
                 echo "Generating $3 code..."
                 if [ "$3" = "backend" ]; then
                   mkdir -p src/backend/{routes,models,middleware,utils}
-                  echo "// Express.js backend application
-const express = require('\''express'\'');
-const cors = require('\''cors'\'');
-const helmet = require('\''helmet'\'');
+                  cat > src/backend/app.js << 'BACKENDEOF'
+// Express.js backend application
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 app.use(cors());
-app.use(express.json({ limit: '\''10mb'\'' }));
+app.use(express.json({ limit: '10mb' }));
 
 // Routes
-app.get('\''/api/health'\'', (req, res) => {
-  res.json({ status: '\''ok'\'', timestamp: new Date().toISOString() });
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: '\''Internal server error'\'' });
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(\`Server running on port \${PORT}\`);
+  console.log(`Server running on port ${PORT}`);
 });
 
-module.exports = app;" > src/backend/app.js
+module.exports = app;
+BACKENDEOF
 
-                  echo "{
-  \"name\": \"auto-app-backend\",
-  \"version\": \"1.0.0\",
-  \"description\": \"Auto-generated backend application\",
-  \"main\": \"app.js\",
-  \"scripts\": {
-    \"start\": \"node app.js\",
-    \"dev\": \"nodemon app.js\",
-    \"test\": \"jest\"
+                  cat > src/backend/package.json << 'BACKPKGEOF'
+{
+  "name": "auto-app-backend",
+  "version": "1.0.0",
+  "description": "Auto-generated backend application",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest"
   },
-  \"dependencies\": {
-    \"express\": \"^4.18.2\",
-    \"cors\": \"^2.8.5\",
-    \"helmet\": \"^7.0.0\"
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0"
   },
-  \"devDependencies\": {
-    \"nodemon\": \"^3.0.1\",
-    \"jest\": \"^29.5.0\"
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.5.0"
   }
-}" > src/backend/package.json
+}
+BACKPKGEOF
                 else
                   mkdir -p src/frontend/{components,pages,utils,styles}
-                  echo "import React from '\''react'\'';
-import '\''./App.css'\'';
+                  cat > src/frontend/App.js << 'FRONTENDEOF'
+import React from 'react';
+import './App.css';
 
 function App() {
-  const [message, setMessage] = React.useState('\''Loading...'\'');
+  const [message, setMessage] = React.useState('Loading...');
 
   React.useEffect(() => {
-    fetch('\''/api/health'\'')
+    fetch('/api/health')
       .then(res => res.json())
-      .then(data => setMessage(\`App is running! Server status: \${data.status}\`))
-      .catch(err => setMessage('\''Error connecting to server'\''));
+      .then(data => setMessage(`App is running! Server status: ${data.status}`))
+      .catch(err => setMessage('Error connecting to server'));
   }, []);
 
   return (
-    <div className=\"App\">
-      <header className=\"App-header\">
+    <div className="App">
+      <header className="App-header">
         <h1>Auto-Generated App</h1>
         <p>{message}</p>
       </header>
@@ -348,33 +359,37 @@ function App() {
   );
 }
 
-export default App;" > src/frontend/App.js
+export default App;
+FRONTENDEOF
 
-                  echo "{
-  \"name\": \"auto-app-frontend\",
-  \"version\": \"1.0.0\",
-  \"private\": true,
-  \"dependencies\": {
-    \"react\": \"^18.2.0\",
-    \"react-dom\": \"^18.2.0\",
-    \"react-scripts\": \"5.0.1\"
+                  cat > src/frontend/package.json << 'FRONTPKGEOF'
+{
+  "name": "auto-app-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
   },
-  \"scripts\": {
-    \"start\": \"react-scripts start\",
-    \"build\": \"react-scripts build\",
-    \"test\": \"react-scripts test\",
-    \"eject\": \"react-scripts eject\"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  \"eslintConfig\": {
-    \"extends\": [\"react-app\"]
+  "eslintConfig": {
+    "extends": ["react-app"]
   },
-  \"browserslist\": {
-    \"production\": [\">0.2%\", \"not dead\", \"not op_mini all\"],
-    \"development\": [\"last 1 chrome version\", \"last 1 firefox version\", \"last 1 safari version\"]
+  "browserslist": {
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   }
-}" > src/frontend/package.json
+}
+FRONTPKGEOF
 
-                  echo ".App {
+                  cat > src/frontend/App.css << 'CSSEOF'
+.App {
   text-align: center;
 }
 
@@ -388,12 +403,14 @@ export default App;" > src/frontend/App.js
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-}" > src/frontend/App.css
+}
+CSSEOF
                 fi
                 ;;
               "code-refactorer")
                 echo "Refactoring code for better quality..."
-                echo "# Code Refactoring Report
+                cat > docs/refactoring-report.md << 'REFACTOREOF'
+# Code Refactoring Report
 
 ## Improvements Made
 - Added proper error handling
@@ -406,7 +423,8 @@ export default App;" > src/frontend/App.js
 - Implement integration tests
 - Add monitoring and logging
 
-Generated at: $(date)" > docs/refactoring-report.md
+Generated at: $(date)
+REFACTOREOF
                 ;;
             esac
             ;;
@@ -486,7 +504,8 @@ Generated at: $(date)" > docs/refactoring-report.md
             case "$2" in
               "security-auditor")
                 echo "Running security audit..."
-                echo "# Security Audit Report
+                cat > docs/security-audit.md << 'SECEOF'
+# Security Audit Report
 
 ## Critical Issues
 - None found
@@ -501,7 +520,8 @@ Generated at: $(date)" > docs/refactoring-report.md
 - Implement security headers
 - Add logging and monitoring
 
-Audit completed at: $(date)" > docs/security-audit.md
+Audit completed at: $(date)
+SECEOF
                 ;;
             esac
             ;;
@@ -550,7 +570,8 @@ Audit completed at: $(date)" > docs/security-audit.md
     - name: Generate final report
       run: |
         mkdir -p .auto-dev/reports
-        echo "# Development Iteration Complete
+        cat > .auto-dev/reports/final-report.md << 'FINALEOF'
+# Development Iteration Complete
 
 ## Iteration Summary
 - **ID**: ${{ needs.initialize.outputs.iteration_id }}
@@ -579,7 +600,8 @@ Audit completed at: $(date)" > docs/security-audit.md
 - Plan next iteration if needed
 
 ---
-*This report was generated automatically by the Auto-Dev Pipeline*" > .auto-dev/reports/final-report.md
+*This report was generated automatically by the Auto-Dev Pipeline*
+FINALEOF
 
     - name: Create final commit
       run: |
