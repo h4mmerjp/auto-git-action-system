@@ -1,131 +1,55 @@
 # Product Requirements Document
 
 ## Project Overview
-
-階層構造を持つタスク管理機能を備えたプロジェクトスケジュールアプリケーション。プロジェクト内のタスクを親子関係で整理し、スケジュールの依存関係を自動的に管理することで、効率的なプロジェクト管理を実現する。上位タスクのスケジュール変更時に下位タスクのスケジュールを自動調整し、常に論理的な時系列を維持する。
+Auto-generated application development project
 
 ## Goals
-
-### ビジネス目標
-
-- プロジェクト管理の効率化とスケジュール管理の自動化
-- タスクの依存関係による scheduling conflicts の削減
-- チームの生産性向上とプロジェクト完了率の改善
-- スケジュール変更に伴う手動調整作業の削減
-
-### ユーザー目標
-
-- 複雑なプロジェクトを階層的に整理して管理したい
-- タスクのスケジュール変更時に関連タスクを手動で調整する手間を省きたい
-- プロジェクト全体の進捗状況を視覚的に把握したい
-- チームメンバーとのスケジュール共有を円滑に行いたい
+- Create a full-stack web application
+- Implement modern development practices
+- Demonstrate automated development pipeline
 
 ## Features
+### Core Features
+- User authentication system
+- RESTful API backend
+- React frontend interface
+- Database integration
 
-### 1. プロジェクト管理機能
-
-- プロジェクトの作成・編集・削除
-- プロジェクトメタデータ管理（名称、説明、開始日、終了日、担当者）
-- プロジェクトステータス管理（企画中、進行中、完了、中止）
-
-### 2. 階層タスク管理機能
-
-- タスクの階層構造作成（親タスク・子タスク・サブタスクの無制限ネスト）
-- タスクの基本情報管理（タイトル、説明、優先度、担当者、完了率）
-- タスクの並び替え・移動（ドラッグ&ドロップ）
-- タスクの複製・削除機能
-
-### 3. 自動スケジュール調整機能
-
-- **コアフィーチャー**: 上位タスクのスケジュール変更時の下位タスク自動調整
-- タスク依存関係の自動検証（親タスク開始日 ≤ 子タスク開始日）
-- スケジュール競合の自動検出とアラート
-- 調整履歴の記録と通知機能
-
-### 4. スケジュール管理機能
-
-- タスクの開始日・終了日・期間設定
-- 祝日・休業日を考慮したスケジュール計算
-- マイルストーン設定とトラッキング
-- スケジュールテンプレートの保存・再利用
-
-### 5. 可視化機能
-
-- ガントチャート表示
-- 階層構造ツリービュー
-- カレンダービュー
-- 進捗ダッシュボード（完了率、遅延タスク、クリティカルパス）
-
-### 6. 協調作業機能
-
-- チームメンバーの招待・権限管理
-- タスクへのコメント・ファイル添付
-- 変更通知・リマインダー機能
-- アクティビティログ
-
-### 7. データ管理機能
-
-- プロジェクトデータのエクスポート（CSV、Excel、PDF）
-- テンプレートからのプロジェクト作成
-- データバックアップ・復元機能
+### Technical Features
+- Responsive web design
+- Security best practices
+- Error handling and logging
+- Automated testing
 
 ## Technical Requirements
+### Frontend
+- React 18+
+- Modern JavaScript (ES6+)
+- CSS3 with responsive design
+- Component-based architecture
 
-### フロントエンド
+### Backend
+- Node.js with Express
+- RESTful API design
+- Security middleware (helmet, cors)
+- Error handling middleware
 
-- **フレームワーク**: React 18+ with TypeScript
-- **UI コンポーネント**: Material-UI または Ant Design
-- **状態管理**: Redux Toolkit または Zustand
-- **データ可視化**: D3.js、Chart.js（ガントチャート用）
-- **ドラッグ&ドロップ**: react-beautiful-dnd
-- **日付処理**: date-fns または Day.js
+### Development
+- Git version control
+- Automated testing
+- Code quality checks
+- Security auditing
 
-### バックエンド
+## Success Criteria
+- Application builds without errors
+- All tests pass
+- Security audit passes
+- Code quality standards met
+- Documentation is complete
 
-- **フレームワーク**: Node.js + Express または Python + FastAPI
-- **データベース**: PostgreSQL（階層データ対応）
-- **ORM**: Prisma（Node.js）または SQLAlchemy（Python）
-- **認証**: JWT + OAuth 2.0（Google、Microsoft）
-- **リアルタイム通信**: WebSocket（Socket.io）
-
-### データベース設計
-
-- **Projects テーブル**: プロジェクト基本情報
-- **Tasks テーブル**: タスク情報 + parent_id（自己参照外部キー）
-- **Users テーブル**: ユーザー情報
-- **ProjectMembers テーブル**: プロジェクトメンバー管理
-- **TaskAssignments テーブル**: タスク担当者管理
-- **ScheduleHistory テーブル**: スケジュール変更履歴
-
-### インフラ・デプロイ
-
-- **クラウド**: AWS または GCP
-- **コンテナ**: Docker + Kubernetes
-- **CI/CD**: GitHub Actions
-- **モニタリング**: CloudWatch、Sentry
-
-### セキュリティ要件
-
-- HTTPS 通信の強制
-- SQL インジェクション対策
-- XSS 攻撃対策
-- データ暗号化（保存時・転送時）
-- アクセスログ記録
-
-### パフォーマンス要件
-
-- ページ読み込み時間: 3 秒以内
-- 大規模プロジェクト対応: 1000 タスク以上
-- 同時ユーザー数: 100 人以上
-- データベースクエリ最適化（インデックス設計）
-
-### ブラウザサポート
-
-- Chrome、Firefox、Safari、Edge（最新 2 バージョン）
-- モバイルブラウザ対応（レスポンシブデザイン）
-
-### API ドキュメント
-
-- OpenAPI/Swagger 仕様書
-- RESTful API 設計
-- GraphQL 対応（将来的な拡張性のため）
+## Timeline
+- Phase 1: Project setup and planning
+- Phase 2: Backend development
+- Phase 3: Frontend development
+- Phase 4: Integration and testing
+- Phase 5: Deployment and documentation
