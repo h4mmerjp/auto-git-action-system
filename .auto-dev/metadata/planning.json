@@ -1,0 +1,11 @@
+{
+  "iteration_id": "20250726_171851",
+  "project_name": "auto-app",
+  "phase": "planning_completed",
+  "planning_completed_at": "2025-07-26T17:18:57+00:00",
+  "files_generated": [
+    "docs/planning/prd-analysis.md",
+    "docs/planning/development-plan.md",
+    "docs/planning/frontend-design.md"
+  ]
+}
