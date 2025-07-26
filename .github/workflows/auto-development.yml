@@ -4,21 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       prd_file:
-        description: 'Path to Product Requirements Document'
+        description: "Path to Product Requirements Document"
         required: true
-        default: 'docs/prd.md'
+        default: "docs/prd.md"
       max_iterations:
-        description: 'Maximum number of iterations'
+        description: "Maximum number of iterations"
         required: false
-        default: '10'
+        default: "10"
       project_name:
-        description: 'Project name for this development cycle'
+        description: "Project name for this development cycle"
         required: true
-        default: 'auto-app'
+        default: "auto-app"
   push:
     paths:
-      - 'docs/prd.md'
-      - 'requirements/**'
+      - "docs/prd.md"
+      - "requirements/**"
 
 env:
   PROJECT_NAME: ${{ github.event.inputs.project_name || 'auto-app' }}
@@ -38,147 +38,147 @@ jobs:
       planning_branch: ${{ steps.setup.outputs.planning_branch }}
       development_branch: ${{ steps.setup.outputs.development_branch }}
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Setup iteration environment
-      id: setup
-      run: |
-        ITERATION_ID=$(date +"%Y%m%d_%H%M%S")
-        PLANNING_BRANCH="planning/iteration-${ITERATION_ID}"
-        DEVELOPMENT_BRANCH="development/iteration-${ITERATION_ID}"
-        
-        echo "iteration_id=${ITERATION_ID}" >> $GITHUB_OUTPUT
-        echo "planning_branch=${PLANNING_BRANCH}" >> $GITHUB_OUTPUT
-        echo "development_branch=${DEVELOPMENT_BRANCH}" >> $GITHUB_OUTPUT
-        
-        mkdir -p .auto-dev/metadata
-        cat > .auto-dev/metadata/iteration.json << EOF
-        {
-          "iteration_id": "${ITERATION_ID}",
-          "project_name": "${{ env.PROJECT_NAME }}",
-          "started_at": "$(date -Iseconds)",
-          "prd_file": "${{ env.PRD_FILE }}",
-          "max_iterations": ${{ env.MAX_ITERATIONS }},
-          "current_phase": "initialize"
-        }
-        EOF
+      - name: Setup iteration environment
+        id: setup
+        run: |
+          ITERATION_ID=$(date +"%Y%m%d_%H%M%S")
+          PLANNING_BRANCH="planning/iteration-${ITERATION_ID}"
+          DEVELOPMENT_BRANCH="development/iteration-${ITERATION_ID}"
 
-    - name: Validate PRD exists
-      run: |
-        if [ ! -f "${{ env.PRD_FILE }}" ]; then
-          echo "Error: PRD file not found at ${{ env.PRD_FILE }}"
-          exit 1
-        fi
-        echo "PRD file validated successfully"
+          echo "iteration_id=${ITERATION_ID}" >> $GITHUB_OUTPUT
+          echo "planning_branch=${PLANNING_BRANCH}" >> $GITHUB_OUTPUT
+          echo "development_branch=${DEVELOPMENT_BRANCH}" >> $GITHUB_OUTPUT
+
+          mkdir -p .auto-dev/metadata
+          cat > .auto-dev/metadata/iteration.json << EOF
+          {
+            "iteration_id": "${ITERATION_ID}",
+            "project_name": "${{ env.PROJECT_NAME }}",
+            "started_at": "$(date -Iseconds)",
+            "prd_file": "${{ env.PRD_FILE }}",
+            "max_iterations": ${{ env.MAX_ITERATIONS }},
+            "current_phase": "initialize"
+          }
+          EOF
+
+      - name: Validate PRD exists
+        run: |
+          if [ ! -f "${{ env.PRD_FILE }}" ]; then
+            echo "Error: PRD file not found at ${{ env.PRD_FILE }}"
+            exit 1
+          fi
+          echo "PRD file validated successfully"
 
   planning_phase:
     needs: initialize
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Create planning branch
-      run: |
-        git config --global user.name "Auto-Dev Bot"
-        git config --global user.email "auto-dev@github.actions"
-        git checkout -b ${{ needs.initialize.outputs.planning_branch }}
+      - name: Create planning branch
+        run: |
+          git config --global user.name "Auto-Dev Bot"
+          git config --global user.email "auto-dev@github.actions"
+          git checkout -b ${{ needs.initialize.outputs.planning_branch }}
 
-    - name: Generate planning documents
-      run: |
-        mkdir -p docs/planning
-        
-        # PRD Analysis
-        cat > docs/planning/prd-analysis.md << 'EOF'
-        # Standardized PRD Analysis
-        ## Project Overview
-        Auto-generated analysis of the provided PRD
-        
-        ## Key Requirements Identified
-        - Feature 1: User authentication
-        - Feature 2: Data management
-        - Feature 3: User interface
-        
-        ## Technical Considerations
-        - Frontend: React/Vue.js
-        - Backend: Node.js/Python
-        - Database: PostgreSQL/MongoDB
-        EOF
-        
-        # Development Plan
-        cat > docs/planning/development-plan.md << 'EOF'
-        # Development Task Plan
-        
-        ## 1. Project Setup
-        - [ ] Initialize repository structure
-        - [ ] Setup development environment
-        - [ ] Configure CI/CD pipeline
-        
-        ## 2. Backend Development
-        - [ ] Setup database schema
-        - [ ] Implement authentication
-        - [ ] Create API endpoints
-        
-        ## 3. Frontend Development
-        - [ ] Setup React/Vue application
-        - [ ] Implement user interface
-        - [ ] Connect to backend API
-        
-        ## 4. Testing & Deployment
-        - [ ] Write unit tests
-        - [ ] Setup integration tests
-        - [ ] Deploy to staging/production
-        EOF
-        
-        # Frontend Design
-        cat > docs/planning/frontend-design.md << 'EOF'
-        # Frontend Design Specification
-        
-        ## Design System
-        - Colors: Primary (#007bff), Secondary (#6c757d)
-        - Typography: Inter, system fonts
-        - Components: Modern, clean design
-        
-        ## Component Architecture
-        - Header/Navigation
-        - Main content area
-        - Footer
-        - Modal/Dialog components
-        
-        ## Responsive Design
-        - Mobile-first approach
-        - Breakpoints: 768px, 1024px, 1200px
-        EOF
+      - name: Generate planning documents
+        run: |
+          mkdir -p docs/planning
 
-    - name: Update iteration metadata
-      run: |
-        mkdir -p .auto-dev/metadata
-        cat > .auto-dev/metadata/planning.json << EOF
-        {
-          "iteration_id": "${{ needs.initialize.outputs.iteration_id }}",
-          "project_name": "${{ env.PROJECT_NAME }}",
-          "phase": "planning_completed",
-          "planning_completed_at": "$(date -Iseconds)",
-          "files_generated": [
-            "docs/planning/prd-analysis.md",
-            "docs/planning/development-plan.md",
-            "docs/planning/frontend-design.md"
-          ]
-        }
-        EOF
+          # PRD Analysis
+          cat > docs/planning/prd-analysis.md << 'EOF'
+          # Standardized PRD Analysis
+          ## Project Overview
+          Auto-generated analysis of the provided PRD
 
-    - name: Commit planning results
-      run: |
-        git add .
-        git commit -m "🎯 Planning Phase Complete - Iteration ${{ needs.initialize.outputs.iteration_id }}
+          ## Key Requirements Identified
+          - Feature 1: User authentication
+          - Feature 2: Data management
+          - Feature 3: User interface
 
-        - PRD Analysis completed
-        - Development plan generated
-        - Frontend design specifications created"
-        git push origin ${{ needs.initialize.outputs.planning_branch }}
+          ## Technical Considerations
+          - Frontend: React/Vue.js
+          - Backend: Node.js/Python
+          - Database: PostgreSQL/MongoDB
+          EOF
+
+          # Development Plan
+          cat > docs/planning/development-plan.md << 'EOF'
+          # Development Task Plan
+
+          ## 1. Project Setup
+          - [ ] Initialize repository structure
+          - [ ] Setup development environment
+          - [ ] Configure CI/CD pipeline
+
+          ## 2. Backend Development
+          - [ ] Setup database schema
+          - [ ] Implement authentication
+          - [ ] Create API endpoints
+
+          ## 3. Frontend Development
+          - [ ] Setup React/Vue application
+          - [ ] Implement user interface
+          - [ ] Connect to backend API
+
+          ## 4. Testing & Deployment
+          - [ ] Write unit tests
+          - [ ] Setup integration tests
+          - [ ] Deploy to staging/production
+          EOF
+
+          # Frontend Design
+          cat > docs/planning/frontend-design.md << 'EOF'
+          # Frontend Design Specification
+
+          ## Design System
+          - Colors: Primary (#007bff), Secondary (#6c757d)
+          - Typography: Inter, system fonts
+          - Components: Modern, clean design
+
+          ## Component Architecture
+          - Header/Navigation
+          - Main content area
+          - Footer
+          - Modal/Dialog components
+
+          ## Responsive Design
+          - Mobile-first approach
+          - Breakpoints: 768px, 1024px, 1200px
+          EOF
+
+      - name: Update iteration metadata
+        run: |
+          mkdir -p .auto-dev/metadata
+          cat > .auto-dev/metadata/planning.json << EOF
+          {
+            "iteration_id": "${{ needs.initialize.outputs.iteration_id }}",
+            "project_name": "${{ env.PROJECT_NAME }}",
+            "phase": "planning_completed",
+            "planning_completed_at": "$(date -Iseconds)",
+            "files_generated": [
+              "docs/planning/prd-analysis.md",
+              "docs/planning/development-plan.md",
+              "docs/planning/frontend-design.md"
+            ]
+          }
+          EOF
+
+      - name: Commit planning results
+        run: |
+          git add .
+          git commit -m "🎯 Planning Phase Complete - Iteration ${{ needs.initialize.outputs.iteration_id }}
+
+          - PRD Analysis completed
+          - Development plan generated
+          - Frontend design specifications created"
+          git push origin ${{ needs.initialize.outputs.planning_branch }}
 
   development_phase:
     needs: [initialize, planning_phase]
@@ -187,24 +187,24 @@ jobs:
       matrix:
         component: [backend, frontend]
     steps:
-    - name: Checkout planning branch
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ needs.initialize.outputs.planning_branch }}
+      - name: Checkout planning branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.initialize.outputs.planning_branch }}
 
-    - name: Create development branch
-      run: |
-        git config --global user.name "Auto-Dev Bot"
-        git config --global user.email "auto-dev@github.actions"
-        git checkout -b ${{ needs.initialize.outputs.development_branch }}-${{ matrix.component }}
+      - name: Create development branch
+        run: |
+          git config --global user.name "Auto-Dev Bot"
+          git config --global user.email "auto-dev@github.actions"
+          git checkout -b ${{ needs.initialize.outputs.development_branch }}-${{ matrix.component }}
 
-    - name: Generate application code
-      run: |
-        if [ "${{ matrix.component }}" = "backend" ]; then
-          mkdir -p src/backend
-          
-          # Backend App
-          cat > src/backend/app.js << 'BACKEND_EOF'
+      - name: Generate application code
+        run: |
+          if [ "${{ matrix.component }}" = "backend" ]; then
+            mkdir -p src/backend
+            
+            # Backend App
+            cat > src/backend/app.js << 'BACKEND_EOF'
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -226,14 +226,14 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(\`Server running on port \${PORT}\`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;
 BACKEND_EOF
-          
-          # Backend Package.json
-          cat > src/backend/package.json << 'BACKEND_PKG_EOF'
+            
+            # Backend Package.json
+            cat > src/backend/package.json << 'BACKEND_PKG_EOF'
 {
   "name": "auto-app-backend",
   "version": "1.0.0",
@@ -255,12 +255,12 @@ BACKEND_EOF
   }
 }
 BACKEND_PKG_EOF
-        
-        else
-          mkdir -p src/frontend/src
-          
-          # Frontend App
-          cat > src/frontend/src/App.js << 'FRONTEND_APP_EOF'
+
+          else
+            mkdir -p src/frontend/src
+            
+            # Frontend App
+            cat > src/frontend/src/App.js << 'FRONTEND_APP_EOF'
 import React from 'react';
 import './App.css';
 
@@ -270,7 +270,7 @@ function App() {
   React.useEffect(() => {
     fetch('/api/health')
       .then(res => res.json())
-      .then(data => setMessage(\`App is running! Server status: \${data.status}\`))
+      .then(data => setMessage(`App is running! Server status: ${data.status}`))
       .catch(err => setMessage('Error connecting to server'));
   }, []);
 
@@ -286,9 +286,9 @@ function App() {
 
 export default App;
 FRONTEND_APP_EOF
-          
-          # Frontend Package.json
-          cat > src/frontend/package.json << 'FRONTEND_PKG_EOF'
+            
+            # Frontend Package.json
+            cat > src/frontend/package.json << 'FRONTEND_PKG_EOF'
 {
   "name": "auto-app-frontend",
   "version": "1.0.0",
@@ -312,9 +312,9 @@ FRONTEND_APP_EOF
   }
 }
 FRONTEND_PKG_EOF
-          
-          # Frontend CSS
-          cat > src/frontend/src/App.css << 'FRONTEND_CSS_EOF'
+            
+            # Frontend CSS
+            cat > src/frontend/src/App.css << 'FRONTEND_CSS_EOF'
 .App {
   text-align: center;
 }
@@ -331,128 +331,128 @@ FRONTEND_PKG_EOF
   font-size: calc(10px + 2vmin);
 }
 FRONTEND_CSS_EOF
-        fi
+          fi
 
-    - name: Commit development results
-      run: |
-        git add .
-        git commit -m "🚀 Development Phase (${{ matrix.component }}) - Iteration ${{ needs.initialize.outputs.iteration_id }}
+      - name: Commit development results
+        run: |
+          git add .
+          git commit -m "🚀 Development Phase (${{ matrix.component }}) - Iteration ${{ needs.initialize.outputs.iteration_id }}
 
-        - Generated ${{ matrix.component }} application code
-        - Applied best practices and security measures"
-        git push origin ${{ needs.initialize.outputs.development_branch }}-${{ matrix.component }}
+          - Generated ${{ matrix.component }} application code
+          - Applied best practices and security measures"
+          git push origin ${{ needs.initialize.outputs.development_branch }}-${{ matrix.component }}
 
   integration:
     needs: [initialize, development_phase]
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout backend branch
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ needs.initialize.outputs.development_branch }}-backend
+      - name: Checkout backend branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.initialize.outputs.development_branch }}-backend
 
-    - name: Merge frontend changes
-      run: |
-        git config --global user.name "Auto-Dev Bot"
-        git config --global user.email "auto-dev@github.actions"
-        git fetch origin ${{ needs.initialize.outputs.development_branch }}-frontend
-        git merge origin/${{ needs.initialize.outputs.development_branch }}-frontend --no-edit --allow-unrelated-histories
+      - name: Merge frontend changes
+        run: |
+          git config --global user.name "Auto-Dev Bot"
+          git config --global user.email "auto-dev@github.actions"
+          git fetch origin ${{ needs.initialize.outputs.development_branch }}-frontend
+          git merge origin/${{ needs.initialize.outputs.development_branch }}-frontend --no-edit --allow-unrelated-histories
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
 
-    - name: Test integration
-      run: |
-        echo "Running integration tests..."
-        
-        if [ -d "src/backend" ]; then
-          cd src/backend
-          npm install --silent
-          echo "Backend dependencies installed successfully"
-          cd ../..
-        fi
-        
-        if [ -d "src/frontend" ]; then
-          cd src/frontend
-          npm install --silent
-          echo "Frontend dependencies installed successfully"
-          cd ../..
-        fi
+      - name: Test integration
+        run: |
+          echo "Running integration tests..."
 
-    - name: Generate final report
-      run: |
-        mkdir -p .auto-dev/reports
-        cat > .auto-dev/reports/final-report.md << 'EOF'
-        # Development Iteration Complete
-        
-        ## Iteration Summary
-        - **Project**: ${{ env.PROJECT_NAME }}
-        - **Completed**: $(date -Iseconds)
-        
-        ## Phases Completed
-        - ✅ Planning Phase
-        - ✅ Development Phase (Backend & Frontend)
-        - ✅ Integration Testing
-        
-        ## Generated Artifacts
-        - Product Requirements Analysis
-        - Development Task Plan
-        - Frontend Design Specifications
-        - Backend Application Code
-        - Frontend Application Code
-        
-        ## Next Steps
-        - Manual review of generated code
-        - Deploy to staging environment
-        - Conduct user acceptance testing
-        EOF
+          if [ -d "src/backend" ]; then
+            cd src/backend
+            npm install --silent
+            echo "Backend dependencies installed successfully"
+            cd ../..
+          fi
 
-    - name: Create integration branch
-      run: |
-        INTEGRATION_BRANCH="integration/iteration-${{ needs.initialize.outputs.iteration_id }}"
-        git checkout -b $INTEGRATION_BRANCH
-        git add .
-        git commit -m "✅ Integration Complete - Iteration ${{ needs.initialize.outputs.iteration_id }}
+          if [ -d "src/frontend" ]; then
+            cd src/frontend
+            npm install --silent
+            echo "Frontend dependencies installed successfully"
+            cd ../..
+          fi
 
-        - Backend and frontend successfully integrated
-        - All components tested and validated"
-        git push origin $INTEGRATION_BRANCH
+      - name: Generate final report
+        run: |
+          mkdir -p .auto-dev/reports
+          cat > .auto-dev/reports/final-report.md << 'EOF'
+          # Development Iteration Complete
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        branch: integration/iteration-${{ needs.initialize.outputs.iteration_id }}
-        base: main
-        title: "🚀 Auto-Dev Iteration ${{ needs.initialize.outputs.iteration_id }}: ${{ env.PROJECT_NAME }}"
-        body: |
-          ## Auto-Generated Development Iteration Complete
-          
-          **Project**: ${{ env.PROJECT_NAME }}
-          **Completed**: $(date)
-          
-          ### What was generated:
-          - 📋 Product requirements analysis
-          - 📝 Development task plan
-          - 🎨 Frontend design specifications
-          - ⚙️ Backend application code
-          - 🖥️ Frontend application code
-          
-          ### Quality Checks:
-          - ✅ Code structure validated
-          - ✅ Dependencies installed successfully
-          - ✅ Integration tests completed
-          
-          ### Next Steps:
-          - [ ] Manual code review
-          - [ ] Deploy to staging
-          - [ ] User acceptance testing
-          
-          ---
-          *This PR was created automatically by the Auto-Dev Pipeline*
-        labels: |
-          auto-generated
-          iteration
-          ready-for-review
+          ## Iteration Summary
+          - **Project**: ${{ env.PROJECT_NAME }}
+          - **Completed**: $(date -Iseconds)
+
+          ## Phases Completed
+          - ✅ Planning Phase
+          - ✅ Development Phase (Backend & Frontend)
+          - ✅ Integration Testing
+
+          ## Generated Artifacts
+          - Product Requirements Analysis
+          - Development Task Plan
+          - Frontend Design Specifications
+          - Backend Application Code
+          - Frontend Application Code
+
+          ## Next Steps
+          - Manual review of generated code
+          - Deploy to staging environment
+          - Conduct user acceptance testing
+          EOF
+
+      - name: Create integration branch
+        run: |
+          INTEGRATION_BRANCH="integration/iteration-${{ needs.initialize.outputs.iteration_id }}"
+          git checkout -b $INTEGRATION_BRANCH
+          git add .
+          git commit -m "✅ Integration Complete - Iteration ${{ needs.initialize.outputs.iteration_id }}
+
+          - Backend and frontend successfully integrated
+          - All components tested and validated"
+          git push origin $INTEGRATION_BRANCH
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: integration/iteration-${{ needs.initialize.outputs.iteration_id }}
+          base: main
+          title: "🚀 Auto-Dev Iteration ${{ needs.initialize.outputs.iteration_id }}: ${{ env.PROJECT_NAME }}"
+          body: |
+            ## Auto-Generated Development Iteration Complete
+
+            **Project**: ${{ env.PROJECT_NAME }}
+            **Completed**: $(date)
+
+            ### What was generated:
+            - 📋 Product requirements analysis
+            - 📝 Development task plan
+            - 🎨 Frontend design specifications
+            - ⚙️ Backend application code
+            - 🖥️ Frontend application code
+
+            ### Quality Checks:
+            - ✅ Code structure validated
+            - ✅ Dependencies installed successfully
+            - ✅ Integration tests completed
+
+            ### Next Steps:
+            - [ ] Manual code review
+            - [ ] Deploy to staging
+            - [ ] User acceptance testing
+
+            ---
+            *This PR was created automatically by the Auto-Dev Pipeline*
+          labels: |
+            auto-generated
+            iteration
+            ready-for-review
