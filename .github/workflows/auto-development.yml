@@ -809,13 +809,25 @@ jobs:
           git checkout -b "${COMPONENT_BRANCH}"
           echo "✅ Successfully created ${{ matrix.component }} development branch"
 
+      - name: Create directory structure first
+        run: |
+          echo "📂 Creating complete directory structure for ${{ matrix.component }}..."
+
+          if [ "${{ matrix.component }}" = "backend" ]; then
+            mkdir -p src/backend/{controllers,models,routes,middleware,utils,config,__tests__,test}
+            echo "✅ Backend directory structure created"
+          elif [ "${{ matrix.component }}" = "frontend" ]; then
+            mkdir -p src/frontend/{src/{components/{Layout,UI,Forms},pages,hooks,services,types,styles,utils},public}
+            echo "✅ Frontend directory structure created"
+          fi
+
       - name: Generate backend code
         if: matrix.component == 'backend'
         run: |
           echo "⚙️ Generating backend application code..."
-          mkdir -p src/backend/{controllers,models,routes,middleware,utils,config}
 
           # Main application file
+          mkdir -p src/backend
           cat > src/backend/app.js << 'EOF'
           const express = require('express');
           const cors = require('cors');
@@ -951,6 +963,7 @@ jobs:
           EOF
 
           # Authentication routes
+          mkdir -p src/backend/routes
           cat > src/backend/routes/auth.js << 'EOF'
           const express = require('express');
           const bcrypt = require('bcryptjs');
@@ -1295,6 +1308,7 @@ jobs:
           EOF
 
           # Authentication middleware
+          mkdir -p src/backend/middleware
           cat > src/backend/middleware/auth.js << 'EOF'
           const jwt = require('jsonwebtoken');
 
@@ -1421,8 +1435,6 @@ jobs:
         if: matrix.component == 'frontend'
         run: |
           echo "🖥️ Generating frontend application code..."
-          mkdir -p src/frontend/src/{components,pages,hooks,services,types,styles,utils}
-          mkdir -p src/frontend/public
 
           # Package.json for frontend
           cat > src/frontend/package.json << 'EOF'
@@ -1492,6 +1504,7 @@ jobs:
           EOF
 
           # Main App component
+          mkdir -p src/frontend/src
           cat > src/frontend/src/App.tsx << 'EOF'
           import React from 'react';
           import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -1602,6 +1615,7 @@ jobs:
           EOF
 
           # Auth hook
+          mkdir -p src/frontend/src/hooks
           cat > src/frontend/src/hooks/useAuth.tsx << 'EOF'
           import React, { createContext, useContext, useState, useEffect } from 'react';
           import { authService } from '../services/authService';
@@ -1676,6 +1690,7 @@ jobs:
           EOF
 
           # Auth service
+          mkdir -p src/frontend/src/services
           cat > src/frontend/src/services/authService.ts << 'EOF'
           import axios from 'axios';
 
@@ -1713,6 +1728,7 @@ jobs:
           EOF
 
           # Login page
+          mkdir -p src/frontend/src/pages
           cat > src/frontend/src/pages/LoginPage.tsx << 'EOF'
           import React, { useState } from 'react';
           import { useNavigate } from 'react-router-dom';
@@ -2114,6 +2130,7 @@ jobs:
           EOF
 
           # App Layout
+          mkdir -p src/frontend/src/components/Layout
           cat > src/frontend/src/components/Layout/AppLayout.tsx << 'EOF'
           import React, { useState } from 'react';
           import {
@@ -2479,6 +2496,7 @@ jobs:
           EOF
 
           # HTML template
+          mkdir -p src/frontend/public
           cat > src/frontend/public/index.html << 'EOF'
           <!DOCTYPE html>
           <html lang="en">
@@ -2518,9 +2536,10 @@ jobs:
             echo "Routes exist: $(test -d src/backend/routes && echo 'YES' || echo 'NO')"
           elif [ "${{ matrix.component }}" = "frontend" ]; then
             echo "Frontend files:"
-            find src/frontend -type f -name "*.tsx" | head -10
+            find src/frontend -type f -name "*.tsx" -o -name "*.ts" -o -name "*.css" | head -10
             echo "Package.json exists: $(test -f src/frontend/package.json && echo 'YES' || echo 'NO')"
             echo "Components exist: $(test -d src/frontend/src/components && echo 'YES' || echo 'NO')"
+            echo "App.tsx exists: $(test -f src/frontend/src/App.tsx && echo 'YES' || echo 'NO')"
           fi
 
           echo "✅ File verification completed"
