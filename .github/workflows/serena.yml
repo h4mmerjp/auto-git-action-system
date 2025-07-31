@@ -1,0 +1,180 @@
+name: Serena Code Assistant
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+
+jobs:
+  serena-assistant:
+    if: contains(github.event.issue.labels.*.name, 'serena-task')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v3
+        
+      - name: Setup Serena
+        run: |
+          git clone https://github.com/oraios/serena /tmp/serena
+          cd /tmp/serena
+          uv sync --all-extras
+          
+      - name: Create Serena config
+        run: |
+          mkdir -p ~/.serena
+          cat > ~/.serena/serena_config.yml << 'EOF'
+          dashboard:
+            enabled: false
+          gui:
+            enabled: false
+          logging:
+            level: INFO
+          contexts:
+            agent:
+              prompt: |
+                You are working in a GitHub Actions environment.
+                Make focused, precise changes based on the request.
+                Always test your changes if possible.
+          modes:
+            github-actions:
+              prompt: |
+                - Work efficiently within CI/CD constraints
+                - Focus on the specific task requested
+                - Provide clear commit messages
+          EOF
+          
+      - name: Setup environment
+        run: |
+          # プロジェクト設定ディレクトリ作成
+          mkdir -p .serena
+          
+          # 作業用環境変数設定
+          echo "WORKSPACE_PATH=${{ github.workspace }}" >> $GITHUB_ENV
+          echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+          echo "ISSUE_TITLE=${{ github.event.issue.title }}" >> $GITHUB_ENV
+          
+      - name: Create .env for Serena
+        run: |
+          cd /tmp/serena
+          cat > .env << 'EOF'
+          # Claude Code OAuth Token
+          CLAUDE_CODE_OAUTH_TOKEN=${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          
+          # Alternative: if using Anthropic API directly
+          # ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}
+          
+          # GitHub context
+          GITHUB_WORKSPACE=${{ github.workspace }}
+          GITHUB_REPOSITORY=${{ github.repository }}
+          GITHUB_ISSUE_NUMBER=${{ github.event.issue.number }}
+          EOF
+          
+      - name: Execute Serena Task
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          cd /tmp/serena
+          
+          # Issue内容を取得
+          PROMPT="${{ github.event.issue.body }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          
+          echo "🚀 Executing Serena task..."
+          echo "Issue: $ISSUE_TITLE"
+          echo "Request: $PROMPT"
+          
+          # 作業ディレクトリをプロジェクトに設定
+          cd ${{ github.workspace }}
+          
+          # Serena Agno Agent で実行
+          echo "$PROMPT" | /tmp/serena/.venv/bin/python /tmp/serena/scripts/agno_agent.py \
+            --project "${{ github.workspace }}" \
+            --context agent \
+            --mode github-actions
+            
+      - name: Check for changes
+        id: changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "📝 Changes detected"
+            git status --short
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No changes made"
+          fi
+          
+      - name: Commit changes
+        if: steps.changes.outputs.changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action (Serena)"
+          git add .
+          git commit -m "🤖 Serena: ${{ github.event.issue.title }}
+
+          Automated changes based on issue #${{ github.event.issue.number }}
+          
+          Request: ${{ github.event.issue.body }}"
+          
+      - name: Create Pull Request
+        if: steps.changes.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "🤖 Serena: ${{ github.event.issue.title }}"
+          title: "🤖 Serena: ${{ github.event.issue.title }}"
+          body: |
+            ## 🤖 Serena Auto-Generated PR
+            
+            This PR was automatically created by Serena based on issue #${{ github.event.issue.number }}.
+            
+            ### Original Request
+            ${{ github.event.issue.body }}
+            
+            ### Changes Made
+            Serena analyzed the request and made the following changes:
+            <!-- Serena will have made specific changes based on the request -->
+            
+            ### Review Guidelines
+            - [ ] Verify the changes match the original request
+            - [ ] Test the functionality if applicable
+            - [ ] Check for any unintended side effects
+            
+            **Auto-generated by Serena** • Issue: #${{ github.event.issue.number }}
+          branch: serena/issue-${{ github.event.issue.number }}
+          delete-branch: true
+          
+      - name: Add comment to issue
+        if: steps.changes.outputs.changes == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 **Serena has completed your request!**\n\nI\'ve created a Pull Request with the requested changes. Please review the PR and merge when ready.\n\n✅ **Status**: Task completed\n📋 **PR**: Will be linked automatically'
+            })
+            
+      - name: Add comment if no changes
+        if: steps.changes.outputs.changes == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 **Serena Task Complete**\n\nI\'ve analyzed your request, but no code changes were needed. This might be because:\n- The request was for information/analysis only\n- The requested changes already exist\n- The request needs clarification\n\nIf you expected changes, please provide more specific details in a new comment.'
+            })
